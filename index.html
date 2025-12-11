@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2A0D4A">
+  <title>Siggraph BNMIT - Payment Request</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #2A0D4A;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #FFFFFF;
+    }
+
+    .container {
+      background: #FFFFFF;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      padding: 48px 40px;
+      text-align: center;
+      animation: fadeIn 0.6s ease-out;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 24px;
+      background: #2A0D4A;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 28px;
+      color: #F4AE1A;
+    }
+
+    .merchant-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: #2A0D4A;
+      margin-bottom: 12px;
+    }
+
+    .upi-id {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 40px;
+      background: #F3F4F6;
+      padding: 10px 16px;
+      border-radius: 8px;
+      display: inline-block;
+      border: 1px solid #e5e7eb;
+      font-family: 'Monaco', monospace;
+      word-break: break-word;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 32px 0;
+    }
+
+    .payment-info {
+      margin: 32px 0;
+    }
+
+    .payment-text {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+
+    .amount {
+      font-size: 64px;
+      font-weight: 800;
+      color: #2A0D4A;
+      margin: 24px 0;
+    }
+
+    .purpose {
+      background: #FFF6DD;
+      color: #2A0D4A;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid #F4AE1A;
+      display: inline-block;
+    }
+
+    .pay-button {
+      background: #F4AE1A;
+      color: #2A0D4A;
+      border: none;
+      padding: 18px 56px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 40px;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+
+    .pay-button:hover {
+      background: #D99617;
+      transform: translateY(-1px);
+    }
+
+    .warning {
+      color: #D97706;
+      font-size: 13px;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .qr-button {
+      margin-top: 24px;
+      background: #FFFFFF;
+      border: 2px solid #F4AE1A;
+      color: #2A0D4A;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .qr-button:hover {
+      background: #FFF2C6;
+    }
+
+    /* Loader Screen */
+    .loading-screen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(42, 13, 74, 0.95);
+      color: #fff;
+      z-index: 2000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .loading-text {
+      font-size: 18px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .progress-container {
+      width: 80%;
+      max-width: 400px;
+      height: 12px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #F4AE1A;
+      transition: width 0.2s;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal-content img {
+      width: 100%;
+      max-width: 280px;
+      border-radius: 12px;
+    }
+
+    .close-button {
+      background: #F4AE1A;
+      color: #2A0D4A;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: .2s;
+      font-weight: 600;
+    }
+
+    .close-button:hover {
+      background: #D99617;
+    }
+
+    @media (max-width: 500px) {
+      .amount {
+        font-size: 48px;
+      }
+      .pay-button {
+        width: 100%;
+        padding: 16px;
+      }
+      .qr-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="logo">
+        <img src="siggraph-bnmit-wordmark.png" alt="Siggraph BNMIT" style="width: 20px; height: 20px;">
+    </div>
+    <div class="merchant-name">Siggraph BNMIT</div>
+    <div class="upi-id">BHARATPE.8O0P0Q6N1Q60857@fbpe</div>
+
+    <div class="divider"></div>
+
+    <div class="payment-info">
+      <div class="payment-text">PAYMENT REQUEST</div>
+      <div class="amount">₹100</div>
+      <div class="purpose">Yearly Membership</div>
+    </div>
+
+    <button class="pay-button" onclick="handlePayment()">Pay Now</button>
+
+    <div class="warning">
+      <span>⚠ Keep a note of your transaction ID/ Screenshot after payment</span>
+    </div>
+
+    <button class="qr-button" onclick="showModal()">📷 Show QR Code</button>
+  </div>
+
+  <!-- Loader -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-text" id="loadingText">Loading...</div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div class="modal" id="qrModal">
+    <div class="modal-content">
+      <img src="siggraph-bnmit-qr-100.png" alt="QR Code">
+      <button class="close-button" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const loadingScreen = document.getElementById("loadingScreen");
+    const progressBar = document.getElementById("progressBar");
+    const loadingText = document.getElementById("loadingText");
+
+    const loadingMessages = [
+      "Preparing your creative journey... 🎨",
+      "Reserving your spot in the design universe 🚀",
+      "Connecting you with fellow magicians... 🤝",
+      "Loading amazing opportunities... ✨",
+      "Getting things ready for you... 🌟",
+      "Fueling your creative potential... 💫",
+      "Making space for innovation... 🎯",
+      "Crafting your creative future... 🔮",
+      "Adding a sprinkle of design magic... ✨",
+      "Preparing for an amazing experience... 🎨",
+      "Igniting your creative spark... 💡",
+      "Building your pathway to innovation... 🛠️",
+      "Unlocking creative possibilities... 🗝️",
+      "Setting up your design adventure... 🎭",
+      "Creating something special for you... 🎪"
+    ];
+
+    function getRandomMessage() {
+      return loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+    }
+
+    async function simulateLoading() {
+  return new Promise((resolve) => {
+    let progress = 0;
+    let messagesShown = 0;
+    loadingScreen.style.display = "flex";
+    loadingText.textContent = getRandomMessage();
+    messagesShown++;
+
+    const interval = setInterval(() => {
+      progress += 2; // faster increment (2% per tick)
+      progressBar.style.width = `${progress}%`;
+
+      // Show only 2 messages total
+      if (progress >= 50 && messagesShown < 2) {
+        loadingText.textContent = getRandomMessage();
+        messagesShown++;
+      }
+
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          loadingScreen.style.display = "none";
+          progressBar.style.width = "0%";
+          resolve();
+        }, 1000); // shorter delay before closing
+      }
+    }, 50); // faster tick (50ms instead of 20ms)
+  });
+}
+
+
+    async function handlePayment() {
+      await simulateLoading();
+      // Redirect to UPI payment after loader completes
+      window.location.href = "upi://pay?cu=INR&pa=BHARATPE.8O0P0Q6N1Q60857@fbpe&pn=Siggraph%20BNMIT&tn=Siggraph%20BNMIT%20yearly%20membership&am=100.00";
+    }
+
+    function showModal() {
+      document.getElementById('qrModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('qrModal').classList.remove('active');
+    }
+  </script>
+
+</body>
